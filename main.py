@@ -5,6 +5,7 @@ A simple chat interface for AI-powered research paper analysis
 """
 
 from config import Config, setup_logging
+from chat import ChatInterface
 
 def main():
     # Setup logging
@@ -19,7 +20,10 @@ def main():
         config = Config()
         logger.info("Configuration loaded successfully")
         print("✅ Configuration loaded")
-        print("(Chat interface coming next...)")
+        
+        # Start chat interface
+        chat = ChatInterface(logger)
+        chat.run_chat_loop()
         
     except Exception as e:
         logger.error(f"Configuration error: {e}")

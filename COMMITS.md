@@ -2,13 +2,9 @@
 
 ## ✅ Completed
 - **Commit 1: Basic Project Setup** - Project structure, dependencies, main entry point
+- **Commit 2: Core Configuration** - Environment management, Anthropic LLM setup, logging
 
 ## 📋 Next Commits (in order)
-
-### Commit 2: Core Configuration
-- Environment configuration management
-- Anthropic LLM setup with CrewAI
-- Basic logging configuration
 
 ### Commit 3: Simple Chat Interface
 - Minimal terminal-based chat loop
