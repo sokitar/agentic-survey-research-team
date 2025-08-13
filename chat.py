@@ -7,8 +7,9 @@ import logging
 class ChatInterface:
     """Simple terminal-based chat interface"""
     
-    def __init__(self, logger=None):
+    def __init__(self, logger=None, config=None):
         self.logger = logger or logging.getLogger(__name__)
+        self.config = config
         self.conversation_history = []
     
     def display_welcome(self):
@@ -53,6 +54,9 @@ class ChatInterface:
         elif command == 'history':
             self.display_history()
             return 'continue'
+        elif command in ['cost', 'costs', 'budget']:
+            self.display_cost_summary()
+            return 'continue'
         else:
             return 'process'
     
@@ -63,6 +67,7 @@ class ChatInterface:
   • quit/exit - Leave the chat
   • help - Show this help message
   • history - Show conversation history
+  • cost/budget - Show current cost tracking summary
   
 💡 Research Tips:
   • Be specific about your research topic
@@ -70,6 +75,13 @@ class ChatInterface:
   • Example: "Find recent papers on transformer architectures"
         """
         print(help_text)
+    
+    def display_cost_summary(self):
+        """Display cost tracking summary if available"""
+        if self.config and hasattr(self.config, 'print_cost_summary'):
+            self.config.print_cost_summary()
+        else:
+            print("\n💰 Cost tracking not available in this session.")
     
     def display_history(self):
         """Display conversation history"""
@@ -108,6 +120,17 @@ class ChatInterface:
                         print("\n🚀 Activating multi-agent research team...")
                         result = research_team.execute_coordinated_research(user_input)
                         self.display_response(result, "Research Team")
+                        
+                        # Display cost summary after research completion
+                        if self.config and hasattr(self.config, 'print_cost_summary'):
+                            print("\n" + "-"*30 + " COST UPDATE " + "-"*30)
+                            summary = self.config.get_cost_summary()
+                            if summary:
+                                session_cost = summary['current_session']['cost']
+                                daily_cost = summary['today']['cost']
+                                print(f"💰 Session cost: ${session_cost:.4f} | Daily total: ${daily_cost:.4f}")
+                            print("-"*74)
+                        
                     except Exception as e:
                         self.logger.error(f"Research execution failed: {e}")
                         self.display_response(

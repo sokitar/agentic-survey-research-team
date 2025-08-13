@@ -15,20 +15,30 @@ def main():
     
     print("🔬 Agentic Survey Research Team")
     print("Welcome! I'll help you research any topic using AI agents.")
+    print("💰 Cost tracking is enabled - monitoring API usage.")
     
     try:
-        # Initialize configuration
-        config = Config()
-        logger.info("Configuration loaded successfully")
-        print("✅ Configuration loaded")
+        # Initialize configuration with cost tracking enabled
+        config = Config(enable_cost_tracking=True)
+        logger.info("Configuration loaded successfully with cost tracking")
+        print("✅ Configuration loaded with cost tracking enabled")
         
-        # Initialize AI research team
-        llm = config.get_llm()
-        research_team = ResearchTeam(llm, logger)
+        # Display initial cost summary
+        config.print_cost_summary()
         
-        # Start chat interface with research team
-        chat = ChatInterface(logger)
+        # Initialize AI research team with cost-tracked LLM
+        # The config.get_llm() method will automatically use tracked LLMs for each agent
+        research_team = ResearchTeam(config.get_llm(), logger)
+        
+        # Start chat interface with research team and config for cost tracking
+        chat = ChatInterface(logger, config)
         chat.run_chat_loop(research_team)
+        
+        # Display final cost summary
+        print("\n" + "="*50)
+        print("📊 FINAL SESSION SUMMARY")
+        print("="*50)
+        config.print_cost_summary()
         
     except Exception as e:
         logger.error(f"Configuration error: {e}")

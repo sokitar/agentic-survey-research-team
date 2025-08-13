@@ -12,6 +12,11 @@ class ResearchCoordinator:
     def __init__(self, llm, logger=None):
         self.llm = llm
         self.logger = logger or logging.getLogger(__name__)
+        
+        # Set LLM context for cost tracking
+        if hasattr(llm, 'set_context'):
+            llm.set_context("Research Coordinator", "Research coordination and planning")
+        
         self.coordinator_agent = self._create_coordinator_agent()
     
     def _create_coordinator_agent(self):
@@ -88,6 +93,11 @@ class LiteratureSearcher:
     def __init__(self, llm, logger=None):
         self.llm = llm
         self.logger = logger or logging.getLogger(__name__)
+        
+        # Set LLM context for cost tracking
+        if hasattr(llm, 'set_context'):
+            llm.set_context("Literature Searcher", "Academic literature search and discovery")
+        
         self.searcher_agent = self._create_searcher_agent()
         self.logger.info("Literature Searcher agent initialized")
     
@@ -136,6 +146,11 @@ class PaperAnalyzer:
     def __init__(self, llm, logger=None):
         self.llm = llm
         self.logger = logger or logging.getLogger(__name__)
+        
+        # Set LLM context for cost tracking
+        if hasattr(llm, 'set_context'):
+            llm.set_context("Research Analyst", "Paper analysis and synthesis")
+        
         self.analyzer_agent = self._create_analyzer_agent()
         self.logger.info("Paper Analyzer agent initialized")
     
@@ -158,6 +173,11 @@ class ReportSynthesizer:
     def __init__(self, llm, logger=None):
         self.llm = llm
         self.logger = logger or logging.getLogger(__name__)
+        
+        # Set LLM context for cost tracking
+        if hasattr(llm, 'set_context'):
+            llm.set_context("Report Writer", "Research report writing and synthesis")
+        
         self.synthesizer_agent = self._create_synthesizer_agent()
         self.logger.info("Report Synthesizer agent initialized")
     
