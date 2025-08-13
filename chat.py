@@ -84,8 +84,8 @@ class ChatInterface:
             message = entry['message'][:100] + "..." if len(entry['message']) > 100 else entry['message']
             print(f"{i}. {role}: {message}")
     
-    def run_chat_loop(self):
-        """Main chat loop"""
+    def run_chat_loop(self, research_team=None):
+        """Main chat loop with optional research team"""
         self.display_welcome()
         
         while True:
@@ -102,11 +102,24 @@ class ChatInterface:
             elif action == 'continue':
                 continue
             elif action == 'process':
-                # This is where we'll integrate with CrewAI agents later
-                self.display_response(
-                    "I understand you want to research: '" + user_input + "'. " +
-                    "The AI agents are being set up in the next commits!",
-                    "Research Coordinator"
-                )
+                if research_team:
+                    # Execute coordinated research with the team
+                    try:
+                        print("\n🚀 Activating multi-agent research team...")
+                        result = research_team.execute_coordinated_research(user_input)
+                        self.display_response(result, "Research Team")
+                    except Exception as e:
+                        self.logger.error(f"Research execution failed: {e}")
+                        self.display_response(
+                            f"Sorry, the research team encountered an error: {str(e)}",
+                            "System"
+                        )
+                else:
+                    # Fallback response if no team
+                    self.display_response(
+                        "I understand you want to research: '" + user_input + "'. " +
+                        "The AI research team is being set up!",
+                        "System"
+                    )
         
         self.logger.info("Chat session ended")

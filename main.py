@@ -6,6 +6,7 @@ A simple chat interface for AI-powered research paper analysis
 
 from config import Config, setup_logging
 from chat import ChatInterface
+from agents import ResearchTeam
 
 def main():
     # Setup logging
@@ -21,9 +22,13 @@ def main():
         logger.info("Configuration loaded successfully")
         print("✅ Configuration loaded")
         
-        # Start chat interface
+        # Initialize AI research team
+        llm = config.get_llm()
+        research_team = ResearchTeam(llm, logger)
+        
+        # Start chat interface with research team
         chat = ChatInterface(logger)
-        chat.run_chat_loop()
+        chat.run_chat_loop(research_team)
         
     except Exception as e:
         logger.error(f"Configuration error: {e}")
