@@ -20,7 +20,7 @@ class Config:
     def get_llm(self):
         """Get configured LLM instance for CrewAI"""
         return LLM(
-            model="anthropic/claude-3-5-sonnet-20241022",
+            model="anthropic/claude-sonnet-4-20250514",
             api_key=self.anthropic_api_key
         )
 
