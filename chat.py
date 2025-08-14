@@ -57,6 +57,12 @@ class ChatInterface:
         elif command in ['cost', 'costs', 'budget']:
             self.display_cost_summary()
             return 'continue'
+        elif command in ['cache', 'cache-stats']:
+            self.display_cache_stats()
+            return 'continue'
+        elif command in ['optimize', 'optimization']:
+            self.display_optimization_suggestions()
+            return 'continue'
         else:
             return 'process'
     
@@ -68,6 +74,8 @@ class ChatInterface:
   • help - Show this help message
   • history - Show conversation history
   • cost/budget - Show current cost tracking summary
+  • cache - Show query caching statistics
+  • optimize - Show cost optimization suggestions
   
 💡 Research Tips:
   • Be specific about your research topic
@@ -75,6 +83,72 @@ class ChatInterface:
   • Example: "Find recent papers on transformer architectures"
         """
         print(help_text)
+    
+    def display_cache_stats(self):
+        """Display caching statistics if available"""
+        try:
+            from cost_optimizer import get_query_cache
+            cache = get_query_cache()
+            stats = cache.get_cache_stats()
+            
+            print("\n" + "="*50)
+            print("💾 QUERY CACHE STATISTICS")
+            print("="*50)
+            print(f"📄 Total cached queries: {stats['total_entries']}")
+            print(f"💰 Total cost saved: ${stats['total_cost_saved']:.4f}")
+            print(f"🕰️ Cache duration: {stats['cache_duration_hours']} hours")
+            print(f"🆕 Recent cache entries (24h): {stats['recent_entries']}")
+            
+            if stats['agent_stats']:
+                print("\n🤖 Agent Cache Performance:")
+                for agent, data in stats['agent_stats'].items():
+                    print(f"  {agent}: {data['hits']} hits, ${data['saved']:.4f} saved")
+            
+            print("="*50)
+            
+        except ImportError:
+            print("\n💾 Cache statistics not available - cost optimization not loaded.")
+        except Exception as e:
+            print(f"\n⚠️ Error loading cache stats: {e}")
+    
+    def display_optimization_suggestions(self):
+        """Display cost optimization suggestions"""
+        try:
+            from cost_optimizer import get_budget_manager
+            budget_manager = get_budget_manager()
+            status = budget_manager.check_budget_status()
+            suggestions = budget_manager.suggest_optimizations(status)
+            
+            print("\n" + "="*50)
+            print("⚡ COST OPTIMIZATION SUGGESTIONS")
+            print("="*50)
+            
+            print(f"📊 Budget Status:")
+            print(f"  Session: {status['session']} ({status['session_usage_percent']:.1f}% used)")
+            print(f"  Daily: {status['daily']} ({status['daily_usage_percent']:.1f}% used)")
+            
+            if status['recommendations']:
+                print("\n🎯 Current Recommendations:")
+                for rec in status['recommendations']:
+                    print(f"  {rec}")
+            
+            if suggestions:
+                print("\n💡 Optimization Tips:")
+                for tip in suggestions:
+                    print(f"  {tip}")
+            
+            print("\n🚀 Available Optimizations:")
+            print("  • Query caching (automatic)")
+            print("  • Prompt optimization (automatic)")
+            print("  • Budget monitoring (active)")
+            print("  • Agent-specific cost tracking")
+            
+            print("="*50)
+            
+        except ImportError:
+            print("\n⚡ Optimization suggestions not available - cost optimizer not loaded.")
+        except Exception as e:
+            print(f"\n⚠️ Error loading optimization suggestions: {e}")
     
     def display_cost_summary(self):
         """Display cost tracking summary if available"""
