@@ -325,3 +325,7 @@ class ResearchTeam:
         except Exception as e:
             self.logger.error(f"Error in complete research workflow: {e}")
             return f"❌ Research team encountered an error: {str(e)}"
+    
+    def conduct_research(self, research_query):
+        """Wrapper method for web interface compatibility"""
+        return self.execute_coordinated_research(research_query)

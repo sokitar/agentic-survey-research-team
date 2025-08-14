@@ -1,0 +1,319 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="row">
+    <!-- Research Interface -->
+    <div class="col-lg-8">
+        <div class="card research-card">
+            <div class="card-header bg-primary text-white">
+                <h4 class="mb-0">
+                    <i class="bi bi-search"></i>
+                    AI Research Query
+                </h4>
+            </div>
+            <div class="card-body">
+                <p class="text-muted mb-4">
+                    Ask our AI research team to investigate any topic. Our multi-agent system will coordinate 
+                    to provide comprehensive research analysis.
+                </p>
+                
+                <form id="researchForm">
+                    <div class="mb-3">
+                        <label for="query" class="form-label fw-bold">Research Question</label>
+                        <textarea 
+                            class="form-control" 
+                            id="query" 
+                            name="query" 
+                            rows="3" 
+                            placeholder="e.g., What are the latest developments in machine learning for healthcare?"
+                            required
+                            minlength="3"
+                        ></textarea>
+                        <div class="form-text">
+                            <i class="bi bi-info-circle"></i>
+                            Be specific and detailed for best results. Minimum 3 characters required.
+                        </div>
+                    </div>
+                    
+                    <div class="d-grid">
+                        <button type="submit" class="btn btn-research btn-lg">
+                            <i class="bi bi-play-circle"></i>
+                            Start Research
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+
+        <!-- Loading Spinner -->
+        <div id="loadingSection" class="loading-spinner mt-4">
+            <div class="card agent-status">
+                <div class="card-body text-center">
+                    <div class="spinner-border text-primary mb-3" role="status">
+                        <span class="visually-hidden">Loading...</span>
+                    </div>
+                    <h5>AI Research Team Working...</h5>
+                    <p class="text-muted">
+                        <i class="bi bi-robot"></i>
+                        Our agents are coordinating to research your query
+                    </p>
+                    <div class="progress">
+                        <div class="progress-bar progress-bar-striped progress-bar-animated" 
+                             role="progressbar" style="width: 100%"></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Results Section -->
+        <div id="resultSection" class="result-section mt-4">
+            <div class="card">
+                <div class="card-header" id="resultHeader">
+                    <h4 class="mb-0">Research Results</h4>
+                </div>
+                <div class="card-body" id="resultBody">
+                    <!-- Results will be inserted here by JavaScript -->
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Cost Tracking Sidebar -->
+    <div class="col-lg-4">
+        <div class="card cost-section">
+            <div class="card-header bg-success text-white">
+                <h5 class="mb-0">
+                    <i class="bi bi-cash-coin"></i>
+                    Cost Tracking
+                </h5>
+            </div>
+            <div class="card-body" id="costSection">
+                {% if cost_summary %}
+                    <div class="cost-item mb-2">
+                        <small class="text-muted">Session Cost</small>
+                        <div class="fw-bold">${{ "%.4f"|format(cost_summary.session_cost) }}</div>
+                    </div>
+                    <div class="cost-item mb-2">
+                        <small class="text-muted">Daily Cost</small>
+                        <div class="fw-bold">${{ "%.4f"|format(cost_summary.daily_cost) }}</div>
+                    </div>
+                    <div class="cost-item mb-3">
+                        <small class="text-muted">Total Tokens</small>
+                        <div class="fw-bold">{{ cost_summary.total_tokens }}</div>
+                    </div>
+                    
+                    <!-- Budget Progress -->
+                    <div class="mb-3">
+                        <small class="text-muted">Session Budget</small>
+                        <div class="progress">
+                            <div class="progress-bar" 
+                                 style="width: {{ (cost_summary.session_cost / cost_summary.session_budget * 100)|round(1) }}%">
+                                {{ (cost_summary.session_cost / cost_summary.session_budget * 100)|round(1) }}%
+                            </div>
+                        </div>
+                    </div>
+                {% else %}
+                    <p class="text-muted">Cost tracking initializing...</p>
+                {% endif %}
+                
+                <button id="refreshCost" class="btn btn-outline-success btn-sm w-100">
+                    <i class="bi bi-arrow-clockwise"></i>
+                    Refresh
+                </button>
+            </div>
+        </div>
+
+        <!-- Agent Status -->
+        <div class="card mt-4">
+            <div class="card-header bg-info text-white">
+                <h5 class="mb-0">
+                    <i class="bi bi-people"></i>
+                    Agent Status
+                </h5>
+            </div>
+            <div class="card-body">
+                <div class="agent-item mb-2">
+                    <i class="bi bi-person-check text-success"></i>
+                    <strong>Research Coordinator</strong>
+                    <small class="text-muted d-block">Planning & coordination</small>
+                </div>
+                <div class="agent-item mb-2">
+                    <i class="bi bi-search text-primary"></i>
+                    <strong>Literature Searcher</strong>
+                    <small class="text-muted d-block">Finding relevant papers</small>
+                </div>
+                <div class="agent-item mb-2">
+                    <i class="bi bi-graph-up text-warning"></i>
+                    <strong>Research Analyst</strong>
+                    <small class="text-muted d-block">Analyzing findings</small>
+                </div>
+                <div class="agent-item">
+                    <i class="bi bi-file-text text-info"></i>
+                    <strong>Report Writer</strong>
+                    <small class="text-muted d-block">Creating final report</small>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const researchForm = document.getElementById('researchForm');
+    const loadingSection = document.getElementById('loadingSection');
+    const resultSection = document.getElementById('resultSection');
+    const resultHeader = document.getElementById('resultHeader');
+    const resultBody = document.getElementById('resultBody');
+    const refreshCostBtn = document.getElementById('refreshCost');
+    const costSection = document.getElementById('costSection');
+
+    // Handle research form submission
+    researchForm.addEventListener('submit', async function(e) {
+        e.preventDefault();
+        
+        const queryInput = document.getElementById('query');
+        const query = queryInput.value.trim();
+        
+        if (!query || query.length < 3) {
+            alert('Please enter a research query with at least 3 characters.');
+            return;
+        }
+
+        // Show loading, hide results
+        loadingSection.style.display = 'block';
+        resultSection.style.display = 'none';
+        
+        // Disable form
+        queryInput.disabled = true;
+        document.querySelector('button[type="submit"]').disabled = true;
+
+        try {
+            // Submit research request
+            const formData = new FormData();
+            formData.append('query', query);
+            
+            const response = await fetch('/research', {
+                method: 'POST',
+                body: formData
+            });
+            
+            const data = await response.json();
+            
+            // Hide loading
+            loadingSection.style.display = 'none';
+            
+            // Show results
+            resultSection.style.display = 'block';
+            
+            if (data.success) {
+                resultHeader.innerHTML = `
+                    <h4 class="mb-0 text-success">
+                        <i class="bi bi-check-circle"></i>
+                        Research Completed
+                    </h4>
+                `;
+                resultBody.innerHTML = `
+                    <div class="research-result p-3 rounded">
+                        <h6 class="fw-bold text-primary">Query: ${data.query}</h6>
+                        <div class="mt-3">
+                            <pre class="text-wrap">${data.result}</pre>
+                        </div>
+                    </div>
+                `;
+                
+                // Update cost summary if available
+                if (data.cost_summary) {
+                    updateCostDisplay(data.cost_summary);
+                }
+            } else {
+                resultHeader.innerHTML = `
+                    <h4 class="mb-0 text-danger">
+                        <i class="bi bi-exclamation-triangle"></i>
+                        Research Error
+                    </h4>
+                `;
+                resultBody.innerHTML = `
+                    <div class="error-result p-3 rounded">
+                        <h6 class="fw-bold text-danger">Error occurred:</h6>
+                        <p class="mb-0">${data.error}</p>
+                    </div>
+                `;
+            }
+            
+        } catch (error) {
+            console.error('Error:', error);
+            loadingSection.style.display = 'none';
+            resultSection.style.display = 'block';
+            
+            resultHeader.innerHTML = `
+                <h4 class="mb-0 text-danger">
+                    <i class="bi bi-exclamation-triangle"></i>
+                    Network Error
+                </h4>
+            `;
+            resultBody.innerHTML = `
+                <div class="error-result p-3 rounded">
+                    <p class="mb-0">Failed to connect to the research service. Please try again.</p>
+                </div>
+            `;
+        } finally {
+            // Re-enable form
+            queryInput.disabled = false;
+            document.querySelector('button[type="submit"]').disabled = false;
+        }
+    });
+
+    // Handle cost refresh
+    refreshCostBtn.addEventListener('click', async function() {
+        try {
+            const response = await fetch('/cost-summary');
+            const data = await response.json();
+            
+            if (data.cost_tracking_enabled && data.cost_summary) {
+                updateCostDisplay(data.cost_summary);
+            }
+        } catch (error) {
+            console.error('Error refreshing cost data:', error);
+        }
+    });
+
+    function updateCostDisplay(costSummary) {
+        const budgetPercent = (costSummary.session_cost / costSummary.session_budget * 100).toFixed(1);
+        
+        costSection.innerHTML = `
+            <div class="cost-item mb-2">
+                <small class="text-muted">Session Cost</small>
+                <div class="fw-bold">$${costSummary.session_cost.toFixed(4)}</div>
+            </div>
+            <div class="cost-item mb-2">
+                <small class="text-muted">Daily Cost</small>
+                <div class="fw-bold">$${costSummary.daily_cost.toFixed(4)}</div>
+            </div>
+            <div class="cost-item mb-3">
+                <small class="text-muted">Total Tokens</small>
+                <div class="fw-bold">${costSummary.total_tokens}</div>
+            </div>
+            
+            <div class="mb-3">
+                <small class="text-muted">Session Budget</small>
+                <div class="progress">
+                    <div class="progress-bar" style="width: ${budgetPercent}%">
+                        ${budgetPercent}%
+                    </div>
+                </div>
+            </div>
+            
+            <button id="refreshCost" class="btn btn-outline-success btn-sm w-100">
+                <i class="bi bi-arrow-clockwise"></i>
+                Refresh
+            </button>
+        `;
+        
+        // Re-attach event listener
+        document.getElementById('refreshCost').addEventListener('click', arguments.callee);
+    }
+});
+</script>
+{% endblock %}
