@@ -17,9 +17,13 @@ A sophisticated multi-agent AI research system built with CrewAI that automates 
 - Intelligent prompt optimization
 - Per-agent cost monitoring and analytics
 
-### 🌐 Dual Interface
-- **Terminal Interface**: Interactive chat-based research queries
-- **Web Interface**: Modern FastAPI-powered web dashboard with Bootstrap UI
+### 🌐 Enhanced Web Dashboard
+- **Real-time WebSocket Updates**: Live agent status tracking and progress monitoring
+- **Interactive Agent Visualization**: D3.js-powered workflow diagrams with real-time status updates
+- **Professional PDF Generation**: ReportLab-powered PDF export with markdown formatting
+- **Live Cost Tracking**: Real-time cost updates and budget monitoring via WebSocket
+- **Responsive Bootstrap Design**: Mobile-friendly interface with modern UI components
+- **Terminal Interface**: Interactive chat-based research queries for advanced users
 
 ### 🎯 Intelligent Optimization
 - Query response caching to reduce redundant API calls

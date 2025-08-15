@@ -11,7 +11,8 @@ This guide will walk you through everything you need to know to effectively use 
 3. [Advanced Features](#advanced-features)
 4. [Cost Management](#cost-management)
 5. [Web Interface](#web-interface)
-6. [Research Strategies](#research-strategies)
+6. [Real-time Web Dashboard](#real-time-web-dashboard)
+7. [Research Strategies](#research-strategies)
 7. [Troubleshooting](#troubleshooting)
 8. [Tips & Best Practices](#tips--best-practices)
 
@@ -274,12 +275,175 @@ Then open: http://localhost:8000
 
 | Feature | Terminal | Web |
 |---------|----------|-----|
-| Real-time updates | ✅ | ✅ |
+| Real-time updates | ✅ | ✅ WebSocket |
 | Cost tracking | ✅ | ✅ Visual charts |
 | Research history | Limited | ✅ Full browser |
 | Export options | Text copy | ✅ PDF/CSV/JSON |
 | Multi-user support | ❌ | ✅ |
 | Accessibility | Limited | ✅ Full responsive |
+| Agent visualization | ❌ | ✅ D3.js graphs |
+| PDF generation | ❌ | ✅ Professional reports |
+
+## 🎛️ Real-time Web Dashboard
+
+The enhanced web dashboard provides a modern, interactive interface with real-time updates powered by WebSocket technology.
+
+### Key Features
+
+#### 1. Real-time Agent Status Tracking
+Watch your research progress live:
+- **Agent Status Cards**: See each agent's current activity
+- **Progress Bars**: Visual progress indicators (0-100%)
+- **Status Badges**: Color-coded status (idle, active, completed, error)
+- **Activity Descriptions**: Detailed current activities
+
+Example status updates you'll see:
+```
+📊 Agent Update: coordinator - active (15%) - Developing comprehensive research strategy
+📊 Agent Update: searcher - active (40%) - Analyzing paper abstracts and relevance  
+📊 Agent Update: analyst - active (65%) - Identifying key themes across research papers
+📊 Agent Update: writer - completed (100%) - Final research report generated successfully
+```
+
+#### 2. Interactive Agent Workflow Visualization
+D3.js-powered workflow diagram:
+- **Node Visualization**: Each agent represented as a colored node
+- **Connection Lines**: Show workflow progression
+- **Real-time Updates**: Nodes change color based on status
+- **Pulse Animation**: Active agents pulse to show activity
+- **Status Colors**:
+  - 🔘 **Gray**: Idle
+  - 🔵 **Blue**: Active (with pulse animation)
+  - 🟢 **Green**: Completed
+  - 🔴 **Red**: Error
+
+#### 3. Live Cost Tracking Dashboard
+Real-time cost monitoring with visual indicators:
+- **Session Cost**: Current research session spending
+- **Daily Cost**: Today's total spending
+- **Budget Progress Bars**: Visual budget utilization
+- **Color-coded Alerts**:
+  - 🟢 Green: Under 70% budget
+  - 🟡 Yellow: 70-90% budget
+  - 🔴 Red: Over 90% budget
+- **Agent Cost Breakdown**: Per-agent spending tracking
+
+#### 4. Professional PDF Report Generation
+One-click PDF export with professional formatting:
+- **Markdown Processing**: Converts research markdown to formatted PDF
+- **Custom Styling**: Professional document layout
+- **Header Information**: Query, generation date, metadata
+- **Structured Formatting**: Proper headings, bullet points, emphasis
+- **Download Management**: Automatic file naming and download
+
+Example PDF features:
+```
+✅ Research Report: [Your Query]
+✅ Generated: 2024-08-15 19:45:30
+✅ Professional formatting with ReportLab
+✅ Markdown-to-PDF conversion
+✅ Proper typography and spacing
+```
+
+#### 5. WebSocket Real-time Communication
+Instant updates without page refresh:
+- **Connection Status**: Shows WebSocket connection state
+- **Live Updates**: Agent status changes in real-time
+- **Cost Updates**: Immediate cost tracking updates
+- **Error Handling**: Automatic reconnection on disconnect
+- **Ping/Pong**: Connection health monitoring
+
+### Using the Web Dashboard
+
+#### Starting a Research Session
+1. **Open Browser**: Navigate to http://localhost:8000
+2. **Check Connection**: Look for "Connected" badge in Agent Status
+3. **Enter Query**: Type research question in the text area
+4. **Submit**: Click "Start Research" button
+5. **Watch Progress**: Monitor real-time agent updates
+
+#### Real-time Monitoring Experience
+Once you submit a query:
+
+1. **Immediate Feedback**:
+   ```
+   🔄 Research started with real-time updates
+   📊 Agent Update: coordinator - active (5%) - Analyzing research query
+   ```
+
+2. **Progressive Updates**:
+   ```
+   📊 Agent Update: coordinator - active (25%) - Research strategy completed successfully
+   📊 Agent Update: searcher - active (30%) - Searching academic databases
+   📊 Agent Update: searcher - active (45%) - Found 12 relevant papers from Nature, Science, Cell
+   ```
+
+3. **Visual Changes**:
+   - Agent status cards update colors
+   - Progress bars fill up
+   - Workflow diagram nodes change colors
+   - Cost tracking updates in real-time
+
+#### PDF Report Generation
+After research completion:
+1. **Download Button**: Appears next to results
+2. **Click Download**: Generates PDF with professional formatting
+3. **Automatic Download**: Browser downloads the formatted report
+4. **File Naming**: Auto-generated filename based on query
+
+### WebSocket Connection Management
+
+The dashboard handles connection issues gracefully:
+- **Auto-reconnect**: Attempts reconnection every 3 seconds
+- **Status Indicators**: 
+  - 🟢 Connected
+  - 🔴 Disconnected 
+  - 🟡 Error
+- **Fallback Mode**: Falls back to polling if WebSocket fails
+
+### Performance and Optimization
+
+#### Browser Requirements
+- **Modern Browser**: Chrome 80+, Firefox 75+, Safari 13+
+- **JavaScript**: Must be enabled
+- **WebSocket Support**: Required for real-time features
+
+#### Network Considerations
+- **Local Network**: Optimized for localhost development
+- **Low Latency**: Real-time updates typically <100ms
+- **Bandwidth**: Minimal - only status updates transmitted
+
+### Troubleshooting Web Dashboard
+
+#### Connection Issues
+```
+Problem: WebSocket shows "Disconnected"
+Solution: 
+1. Refresh the page
+2. Check if web_app.py is running
+3. Verify port 8000 is available
+4. Check browser console for errors
+```
+
+#### PDF Generation Issues
+```
+Problem: PDF download fails
+Solution:
+1. Check browser allows downloads
+2. Verify ReportLab is installed
+3. Ensure sufficient disk space
+4. Try shorter research content
+```
+
+#### Performance Issues
+```
+Problem: Slow real-time updates
+Solution:
+1. Close other browser tabs
+2. Check system resources
+3. Restart the web application
+4. Use Chrome for best performance
+```
 
 ## 🔬 Research Strategies
 

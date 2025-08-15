@@ -197,9 +197,10 @@ class ReportSynthesizer:
 class ResearchTeam:
     """Coordinates multiple agents working together in a research team"""
     
-    def __init__(self, llm, logger=None):
+    def __init__(self, llm, logger=None, status_callback=None):
         self.llm = llm
         self.logger = logger or logging.getLogger(__name__)
+        self.status_callback = status_callback  # For WebSocket real-time updates
         
         # Initialize all agents
         print("⚙️  Initializing Research Team...")
@@ -326,6 +327,203 @@ class ResearchTeam:
             self.logger.error(f"Error in complete research workflow: {e}")
             return f"❌ Research team encountered an error: {str(e)}"
     
+    async def update_agent_status(self, agent_name, status, progress, activity):
+        """Send WebSocket update if callback is available"""
+        if self.status_callback:
+            try:
+                await self.status_callback(agent_name, status, progress, activity)
+            except Exception as e:
+                self.logger.error(f"Error updating agent status via WebSocket: {e}")
+        
+        # Also log for terminal output
+        self.logger.info(f"Agent {agent_name}: {status} ({progress}%) - {activity}")
+    
+    async def execute_coordinated_research_with_updates(self, research_query):
+        """Execute research workflow with real-time WebSocket updates"""
+        self.logger.info(f"🚀 Starting complete research workflow with real-time updates: {research_query}")
+        
+        try:
+            # Stage 1: Research Coordinator (0-25%)
+            await self.update_agent_status(
+                "coordinator", "active", 5, f"Analyzing research query: '{research_query[:50]}{'...' if len(research_query) > 50 else research_query}'"
+            )
+            
+            # Show complete team action overview
+            print(f"\n🔍 COMPLETE RESEARCH WORKFLOW ACTIVATED")
+            print(f"📋 Query: {research_query}")
+            print(f"👥 All Agents: Coordinator → Literature Searcher → Analyst → Report Writer")
+            print("─" * 60)
+            
+            await self.update_agent_status(
+                "coordinator", "active", 15, "Developing comprehensive research strategy"
+            )
+            
+            # Create coordinator task
+            coordinator_task = Task(
+                description=f"""
+                As Research Coordinator, provide strategic direction for researching: {research_query}
+                
+                Create a focused research strategy including:
+                1. Key research areas and scope
+                2. Research methodology approach  
+                3. Success criteria for the literature search
+                4. Integration plan for findings
+                
+                Keep your response concise and actionable for the team.
+                """,
+                agent=self.coordinator.coordinator_agent,
+                expected_output="Concise research strategy with clear direction for the team."
+            )
+            
+            await self.update_agent_status(
+                "coordinator", "active", 20, "Executing research coordination task"
+            )
+            
+            # Execute coordinator task
+            coordinator_crew = Crew(agents=[self.coordinator.coordinator_agent], tasks=[coordinator_task], verbose=True)
+            coordinator_result = coordinator_crew.kickoff()
+            
+            await self.update_agent_status(
+                "coordinator", "completed", 25, "Research strategy completed successfully"
+            )
+            
+            # Stage 2: Literature Searcher (25-50%)
+            await self.update_agent_status(
+                "searcher", "active", 30, "Searching academic databases (PubMed, JSTOR, IEEE)"
+            )
+            
+            literature_task = Task(
+                description=f"""
+                Based on the Research Coordinator's strategy, conduct targeted literature search for: {research_query}
+                
+                Strategy from coordinator: {str(coordinator_result)[:200]}...
+                
+                Deliver:
+                1. Optimized search keywords and strategy
+                2. 6-8 most relevant recent papers (2020-2024)
+                3. Key findings and research gaps identified
+                4. Quality assessment of literature coverage
+                
+                Be comprehensive but organized in your findings.
+                """,
+                agent=self.searcher.searcher_agent,
+                expected_output="Structured literature search results with key papers and coverage assessment."
+            )
+            
+            await self.update_agent_status(
+                "searcher", "active", 40, "Analyzing paper abstracts and relevance"
+            )
+            
+            searcher_crew = Crew(agents=[self.searcher.searcher_agent], tasks=[literature_task], verbose=True)
+            searcher_result = searcher_crew.kickoff()
+            
+            await self.update_agent_status(
+                "searcher", "completed", 50, "Literature search completed: found key research papers"
+            )
+            
+            # Stage 3: Research Analyst (50-75%)
+            await self.update_agent_status(
+                "analyst", "active", 55, "Analyzing research methodologies and findings"
+            )
+            
+            analysis_task = Task(
+                description=f"""
+                Based on the literature search results, conduct deep analysis of the research findings for: {research_query}
+                
+                Literature found: {str(searcher_result)[:300]}...
+                
+                Your analysis should include:
+                1. Synthesis of key themes and patterns across papers
+                2. Identification of methodological approaches
+                3. Summary of major findings and conclusions
+                4. Critical gaps and limitations in current research
+                5. Emerging trends and future directions
+                
+                Provide structured analysis that will inform the final report.
+                """,
+                agent=self.analyzer.analyzer_agent,
+                expected_output="Comprehensive analysis of research findings with key insights and gaps."
+            )
+            
+            await self.update_agent_status(
+                "analyst", "active", 65, "Identifying key themes across research papers"
+            )
+            
+            analyzer_crew = Crew(agents=[self.analyzer.analyzer_agent], tasks=[analysis_task], verbose=True)
+            analysis_result = analyzer_crew.kickoff()
+            
+            await self.update_agent_status(
+                "analyst", "completed", 75, "Analysis complete: key themes and gaps identified"
+            )
+            
+            # Stage 4: Report Writer (75-100%)
+            await self.update_agent_status(
+                "writer", "active", 80, "Drafting executive summary and introduction"
+            )
+            
+            report_task = Task(
+                description=f"""
+                Create a comprehensive, easy-to-understand research report on: {research_query}
+                
+                Based on all previous work:
+                - Strategy: {str(coordinator_result)[:200]}...
+                - Literature: {str(searcher_result)[:200]}...
+                - Analysis: {str(analysis_result)[:200]}...
+                
+                Write a complete report that includes:
+                
+                1. EXECUTIVE SUMMARY (2-3 paragraphs)
+                2. INTRODUCTION & BACKGROUND
+                3. METHODOLOGY (search strategy and approach)
+                4. KEY FINDINGS & INSIGHTS
+                   - Major themes and patterns
+                   - Important research outcomes
+                   - Methodological insights
+                5. RESEARCH GAPS & LIMITATIONS
+                6. FUTURE DIRECTIONS & RECOMMENDATIONS
+                7. CONCLUSION
+                
+                Write in clear, accessible language that serves both academic and general audiences.
+                Make the report comprehensive yet engaging and easy to understand.
+                Aim for approximately 2000-3000 words.
+                """,
+                agent=self.synthesizer.synthesizer_agent,
+                expected_output="A comprehensive, well-structured research report of 2000-3000 words covering all aspects of the research topic."
+            )
+            
+            await self.update_agent_status(
+                "writer", "active", 90, "Compiling comprehensive 2,500-word research report"
+            )
+            
+            writer_crew = Crew(agents=[self.synthesizer.synthesizer_agent], tasks=[report_task], verbose=True)
+            final_result = writer_crew.kickoff()
+            
+            await self.update_agent_status(
+                "writer", "completed", 100, "Final research report generated successfully"
+            )
+            
+            print("\n✅ COMPLETE RESEARCH REPORT GENERATED")
+            print("📋 Full workflow completed: Strategy → Search → Analysis → Report")
+            self.logger.info("Complete research workflow completed successfully")
+            return str(final_result)
+            
+        except Exception as e:
+            self.logger.error(f"Error in complete research workflow: {e}")
+            # Update any active agents to error status
+            if self.status_callback:
+                try:
+                    await self.update_agent_status("coordinator", "error", 0, f"Error: {str(e)}")
+                    await self.update_agent_status("searcher", "error", 0, f"Error: {str(e)}")
+                    await self.update_agent_status("analyst", "error", 0, f"Error: {str(e)}")
+                    await self.update_agent_status("writer", "error", 0, f"Error: {str(e)}")
+                except:
+                    pass
+            return f"❌ Research team encountered an error: {str(e)}"
+    
     def conduct_research(self, research_query):
-        """Wrapper method for web interface compatibility"""
+        """Wrapper method for web interface compatibility (synchronous)"""
         return self.execute_coordinated_research(research_query)
+    
+    def conduct_research_async(self, research_query):
+        """Wrapper method for web interface with WebSocket updates (asynchronous)"""
+        return self.execute_coordinated_research_with_updates(research_query)

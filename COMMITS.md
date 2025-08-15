@@ -15,11 +15,11 @@
 
 ## 📋 Next Tasks (in order)
 
-### Commit 11: Real-time Web Dashboard with WebSockets
-- Implement WebSocket connection for real-time agent status updates
-- Create live agent activity dashboard with progress indicators
-- Add real-time cost tracking display in web interface
-- Build interactive research workflow visualization
+### Commit 11: Enhanced Web Dashboard with Real-time Updates
+- **Real-time Agent Status Updates**: WebSocket implementation for live status updates showing actual current activities ("Analyzing 15 papers from Nature, Science..."), progress indicators with percentages, estimated time remaining, and live token usage counts
+- **Cost Tracking Integration Fix**: Resolve cost display issues showing $0.0000, implement real-time cost updates via WebSocket, add per-agent cost breakdown, cost prediction for current research, and visual budget progress bars
+- **PDF Report Generation**: Add professional PDF export functionality using ReportLab/WeasyPrint with formatted templates, charts/graphs, and multiple export formats (PDF, Word, HTML)
+- **Enhanced UI Improvements**: Compact but informative agent status updates, real-time progress visualization, better responsive design, and status indicators with colors and icons
 
 ### Commit 12: Advanced Web Features & Agent Monitor
 - Create agent performance dashboard with charts and metrics

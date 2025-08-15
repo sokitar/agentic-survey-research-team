@@ -106,11 +106,38 @@
                     <div class="mb-3">
                         <small class="text-muted">Session Budget</small>
                         <div class="progress">
-                            <div class="progress-bar" 
-                                 style="width: {{ (cost_summary.session_cost / cost_summary.session_budget * 100)|round(1) }}%">
-                                {{ (cost_summary.session_cost / cost_summary.session_budget * 100)|round(1) }}%
+                            {% set budget_percent = (cost_summary.session_cost / cost_summary.session_budget * 100)|round(1) %}
+                            <div class="progress-bar
+                                {% if budget_percent >= 90 %} bg-danger
+                                {% elif budget_percent >= 70 %} bg-warning
+                                {% else %} bg-success
+                                {% endif %}"
+                                 style="width: {{ budget_percent }}%">
+                                {{ budget_percent }}%
                             </div>
                         </div>
+                        <small class="text-muted">
+                            ${{ "%.4f"|format(cost_summary.session_cost) }} / ${{ "%.2f"|format(cost_summary.session_budget) }}
+                        </small>
+                    </div>
+                    
+                    <!-- Daily Budget Progress -->
+                    <div class="mb-3">
+                        <small class="text-muted">Daily Budget</small>
+                        <div class="progress">
+                            {% set daily_percent = (cost_summary.daily_cost / cost_summary.daily_budget * 100)|round(1) %}
+                            <div class="progress-bar
+                                {% if daily_percent >= 90 %} bg-danger
+                                {% elif daily_percent >= 70 %} bg-warning
+                                {% else %} bg-success
+                                {% endif %}"
+                                 style="width: {{ daily_percent }}%">
+                                {{ daily_percent }}%
+                            </div>
+                        </div>
+                        <small class="text-muted">
+                            ${{ "%.4f"|format(cost_summary.daily_cost) }} / ${{ "%.2f"|format(cost_summary.daily_budget) }}
+                        </small>
                     </div>
                 {% else %}
                     <p class="text-muted">Cost tracking initializing...</p>
@@ -129,29 +156,83 @@
                 <h5 class="mb-0">
                     <i class="bi bi-people"></i>
                     Agent Status
+                    <span id="connectionStatus" class="badge bg-light text-dark ms-2">Connecting...</span>
                 </h5>
             </div>
             <div class="card-body">
-                <div class="agent-item mb-2">
-                    <i class="bi bi-person-check text-success"></i>
-                    <strong>Research Coordinator</strong>
-                    <small class="text-muted d-block">Planning & coordination</small>
+                <!-- Research Coordinator -->
+                <div class="agent-item mb-3" id="agent-coordinator">
+                    <div class="d-flex justify-content-between align-items-center mb-2">
+                        <div>
+                            <i class="bi bi-person-check agent-icon" id="coordinator-icon"></i>
+                            <strong>Research Coordinator</strong>
+                        </div>
+                        <span class="badge bg-secondary agent-status" id="coordinator-status">idle</span>
+                    </div>
+                    <small class="text-muted d-block agent-activity" id="coordinator-activity">Planning & coordination</small>
+                    <div class="progress mt-2" style="height: 8px;">
+                        <div class="progress-bar" id="coordinator-progress" role="progressbar" style="width: 0%" aria-valuenow="0" aria-valuemin="0" aria-valuemax="100"></div>
+                    </div>
                 </div>
-                <div class="agent-item mb-2">
-                    <i class="bi bi-search text-primary"></i>
-                    <strong>Literature Searcher</strong>
-                    <small class="text-muted d-block">Finding relevant papers</small>
+                
+                <!-- Literature Searcher -->
+                <div class="agent-item mb-3" id="agent-searcher">
+                    <div class="d-flex justify-content-between align-items-center mb-2">
+                        <div>
+                            <i class="bi bi-search agent-icon" id="searcher-icon"></i>
+                            <strong>Literature Searcher</strong>
+                        </div>
+                        <span class="badge bg-secondary agent-status" id="searcher-status">idle</span>
+                    </div>
+                    <small class="text-muted d-block agent-activity" id="searcher-activity">Finding relevant papers</small>
+                    <div class="progress mt-2" style="height: 8px;">
+                        <div class="progress-bar" id="searcher-progress" role="progressbar" style="width: 0%" aria-valuenow="0" aria-valuemin="0" aria-valuemax="100"></div>
+                    </div>
                 </div>
-                <div class="agent-item mb-2">
-                    <i class="bi bi-graph-up text-warning"></i>
-                    <strong>Research Analyst</strong>
-                    <small class="text-muted d-block">Analyzing findings</small>
+                
+                <!-- Research Analyst -->
+                <div class="agent-item mb-3" id="agent-analyst">
+                    <div class="d-flex justify-content-between align-items-center mb-2">
+                        <div>
+                            <i class="bi bi-graph-up agent-icon" id="analyst-icon"></i>
+                            <strong>Research Analyst</strong>
+                        </div>
+                        <span class="badge bg-secondary agent-status" id="analyst-status">idle</span>
+                    </div>
+                    <small class="text-muted d-block agent-activity" id="analyst-activity">Analyzing findings</small>
+                    <div class="progress mt-2" style="height: 8px;">
+                        <div class="progress-bar" id="analyst-progress" role="progressbar" style="width: 0%" aria-valuenow="0" aria-valuemin="0" aria-valuemax="100"></div>
+                    </div>
                 </div>
-                <div class="agent-item">
-                    <i class="bi bi-file-text text-info"></i>
-                    <strong>Report Writer</strong>
-                    <small class="text-muted d-block">Creating final report</small>
+                
+                <!-- Report Writer -->
+                <div class="agent-item mb-2" id="agent-writer">
+                    <div class="d-flex justify-content-between align-items-center mb-2">
+                        <div>
+                            <i class="bi bi-file-text agent-icon" id="writer-icon"></i>
+                            <strong>Report Writer</strong>
+                        </div>
+                        <span class="badge bg-secondary agent-status" id="writer-status">idle</span>
+                    </div>
+                    <small class="text-muted d-block agent-activity" id="writer-activity">Creating final report</small>
+                    <div class="progress mt-2" style="height: 8px;">
+                        <div class="progress-bar" id="writer-progress" role="progressbar" style="width: 0%" aria-valuenow="0" aria-valuemin="0" aria-valuemax="100"></div>
+                    </div>
                 </div>
+            </div>
+        </div>
+        
+        <!-- Agent Workflow Graph -->
+        <div class="card mt-4">
+            <div class="card-header bg-dark text-white">
+                <h5 class="mb-0">
+                    <i class="bi bi-diagram-3"></i>
+                    Agent Workflow
+                </h5>
+            </div>
+            <div class="card-body">
+                <div id="agentGraph" style="height: 300px; width: 100%;"></div>
+                <small class="text-muted">Real-time visualization of agent interactions and workflow</small>
             </div>
         </div>
     </div>
@@ -214,14 +295,23 @@ document.addEventListener('DOMContentLoaded', function() {
                         Research Completed
                     </h4>
                 `;
-                resultBody.innerHTML = `
-                    <div class="research-result p-3 rounded">
-                        <h6 class="fw-bold text-primary">Query: ${data.query}</h6>
-                        <div class="mt-3">
-                            <pre class="text-wrap">${data.result}</pre>
-                        </div>
-                    </div>
-                `;
+                        resultBody.innerHTML = `
+                            <div class="research-result p-3 rounded">
+                                <div class="d-flex justify-content-between align-items-center mb-3">
+                                    <h6 class="fw-bold text-primary mb-0">Query: ${data.query}</h6>
+                                    <button class="btn btn-outline-primary btn-sm" onclick="downloadPDF('${data.query}', '${data.result.replace(/'/g, '\\\'')}')">
+                                        <i class="bi bi-download"></i> Download PDF
+                                    </button>
+                                </div>
+                                <div class="mt-3" id="markdownContent">
+                                    <!-- Markdown content will be rendered here -->
+                                </div>
+                            </div>
+                        `;
+                        
+                        // Render markdown content
+                        const markdownContent = document.getElementById('markdownContent');
+                        markdownContent.innerHTML = marked.parse(data.result);
                 
                 // Update cost summary if available
                 if (data.cost_summary) {
@@ -281,6 +371,14 @@ document.addEventListener('DOMContentLoaded', function() {
 
     function updateCostDisplay(costSummary) {
         const budgetPercent = (costSummary.session_cost / costSummary.session_budget * 100).toFixed(1);
+        const dailyPercent = (costSummary.daily_cost / costSummary.daily_budget * 100).toFixed(1);
+        
+        // Determine budget warning colors
+        const getBudgetColorClass = (percent) => {
+            if (percent >= 90) return 'bg-danger';
+            if (percent >= 70) return 'bg-warning';
+            return 'bg-success';
+        };
         
         costSection.innerHTML = `
             <div class="cost-item mb-2">
@@ -293,16 +391,31 @@ document.addEventListener('DOMContentLoaded', function() {
             </div>
             <div class="cost-item mb-3">
                 <small class="text-muted">Total Tokens</small>
-                <div class="fw-bold">${costSummary.total_tokens}</div>
+                <div class="fw-bold">${costSummary.total_tokens || 0}</div>
             </div>
             
             <div class="mb-3">
                 <small class="text-muted">Session Budget</small>
                 <div class="progress">
-                    <div class="progress-bar" style="width: ${budgetPercent}%">
+                    <div class="progress-bar ${getBudgetColorClass(budgetPercent)}" style="width: ${budgetPercent}%">
                         ${budgetPercent}%
                     </div>
                 </div>
+                <small class="text-muted">
+                    $${costSummary.session_cost.toFixed(4)} / $${costSummary.session_budget.toFixed(2)}
+                </small>
+            </div>
+            
+            <div class="mb-3">
+                <small class="text-muted">Daily Budget</small>
+                <div class="progress">
+                    <div class="progress-bar ${getBudgetColorClass(dailyPercent)}" style="width: ${dailyPercent}%">
+                        ${dailyPercent}%
+                    </div>
+                </div>
+                <small class="text-muted">
+                    $${costSummary.daily_cost.toFixed(4)} / $${costSummary.daily_budget.toFixed(2)}
+                </small>
             </div>
             
             <button id="refreshCost" class="btn btn-outline-success btn-sm w-100">
@@ -314,6 +427,504 @@ document.addEventListener('DOMContentLoaded', function() {
         // Re-attach event listener
         document.getElementById('refreshCost').addEventListener('click', arguments.callee);
     }
+
+    // WebSocket functionality for real-time updates
+    let websocket = null;
+    const connectionStatus = document.getElementById('connectionStatus');
+    
+    function connectWebSocket() {
+        const protocol = window.location.protocol === 'https:' ? 'wss:' : 'ws:';
+        const wsUrl = `${protocol}//${window.location.host}/ws`;
+        
+        websocket = new WebSocket(wsUrl);
+        
+        websocket.onopen = function(event) {
+            console.log('WebSocket connected');
+            connectionStatus.textContent = 'Connected';
+            connectionStatus.className = 'badge bg-success text-white ms-2';
+        };
+        
+        websocket.onmessage = function(event) {
+            const data = JSON.parse(event.data);
+            console.log('WebSocket message:', data);
+            
+            switch(data.type) {
+                case 'connection':
+                    handleConnectionMessage(data);
+                    break;
+                case 'agent_update':
+                    updateAgentStatus(data.agent, data.data);
+                    break;
+                case 'cost_update':
+                    updateCostDisplay(data.data);
+                    break;
+                case 'research_complete':
+                    handleResearchComplete(data);
+                    break;
+                case 'research_error':
+                    handleResearchError(data);
+                    break;
+            }
+        };
+        
+        websocket.onclose = function(event) {
+            console.log('WebSocket disconnected');
+            connectionStatus.textContent = 'Disconnected';
+            connectionStatus.className = 'badge bg-danger text-white ms-2';
+            
+            // Attempt to reconnect after 3 seconds
+            setTimeout(connectWebSocket, 3000);
+        };
+        
+        websocket.onerror = function(error) {
+            console.error('WebSocket error:', error);
+            connectionStatus.textContent = 'Error';
+            connectionStatus.className = 'badge bg-warning text-dark ms-2';
+        };
+    }
+    
+    function handleConnectionMessage(data) {
+        console.log('Connected to WebSocket, initial agent status:', data.agent_status);
+        // Initialize agent status displays
+        if (data.agent_status) {
+            Object.keys(data.agent_status).forEach(agent => {
+                updateAgentStatus(agent, data.agent_status[agent]);
+            });
+        }
+    }
+    
+    function updateAgentStatus(agentName, agentData) {
+        const statusElement = document.getElementById(`${agentName}-status`);
+        const activityElement = document.getElementById(`${agentName}-activity`);
+        const progressElement = document.getElementById(`${agentName}-progress`);
+        const iconElement = document.getElementById(`${agentName}-icon`);
+        
+        if (statusElement) {
+            // Update status badge
+            statusElement.textContent = agentData.status;
+            
+            // Update status badge color
+            statusElement.className = 'badge agent-status';
+            switch(agentData.status) {
+                case 'idle':
+                    statusElement.classList.add('bg-secondary');
+                    break;
+                case 'active':
+                    statusElement.classList.add('bg-primary');
+                    break;
+                case 'completed':
+                    statusElement.classList.add('bg-success');
+                    break;
+                case 'error':
+                    statusElement.classList.add('bg-danger');
+                    break;
+                default:
+                    statusElement.classList.add('bg-secondary');
+            }
+        }
+        
+        if (activityElement && agentData.activity) {
+            activityElement.textContent = agentData.activity;
+        }
+        
+        if (progressElement) {
+            progressElement.style.width = `${agentData.progress || 0}%`;
+            progressElement.setAttribute('aria-valuenow', agentData.progress || 0);
+            
+            // Update progress bar color based on status
+            progressElement.className = 'progress-bar';
+            switch(agentData.status) {
+                case 'active':
+                    progressElement.classList.add('bg-primary', 'progress-bar-striped', 'progress-bar-animated');
+                    break;
+                case 'completed':
+                    progressElement.classList.add('bg-success');
+                    break;
+                case 'error':
+                    progressElement.classList.add('bg-danger');
+                    break;
+                default:
+                    progressElement.classList.add('bg-secondary');
+            }
+        }
+        
+        if (iconElement) {
+            // Update icon color based on status
+            iconElement.className = 'bi agent-icon';
+            switch(agentName) {
+                case 'coordinator':
+                    iconElement.classList.add('bi-person-check');
+                    break;
+                case 'searcher':
+                    iconElement.classList.add('bi-search');
+                    break;
+                case 'analyst':
+                    iconElement.classList.add('bi-graph-up');
+                    break;
+                case 'writer':
+                    iconElement.classList.add('bi-file-text');
+                    break;
+            }
+            
+            // Add status color
+            switch(agentData.status) {
+                case 'active':
+                    iconElement.classList.add('text-primary');
+                    break;
+                case 'completed':
+                    iconElement.classList.add('text-success');
+                    break;
+                case 'error':
+                    iconElement.classList.add('text-danger');
+                    break;
+                default:
+                    iconElement.classList.add('text-muted');
+            }
+        }
+    }
+    
+    function handleResearchComplete(data) {
+        // Hide loading
+        loadingSection.style.display = 'none';
+        
+        // Show results with PDF download option
+        resultSection.style.display = 'block';
+        resultHeader.innerHTML = `
+            <h4 class="mb-0 text-success">
+                <i class="bi bi-check-circle"></i>
+                Research Completed
+            </h4>
+        `;
+        
+        resultBody.innerHTML = `
+            <div class="research-result p-3 rounded">
+                <div class="d-flex justify-content-between align-items-center mb-3">
+                    <h6 class="fw-bold text-primary mb-0">Query: ${data.query}</h6>
+                    <button class="btn btn-outline-primary btn-sm" onclick="downloadPDF('${data.query}', '${data.result.replace(/'/g, '\\\'').replace(/\n/g, '\\n')}')">
+                        <i class="bi bi-download"></i> Download PDF
+                    </button>
+                </div>
+                <div class="mt-3" id="markdownContentWebSocket">
+                    <!-- Markdown content will be rendered here -->
+                </div>
+                <small class="text-muted">Completed: ${new Date(data.timestamp).toLocaleString()}</small>
+            </div>
+        `;
+        
+        // Render markdown content
+        const markdownContentWS = document.getElementById('markdownContentWebSocket');
+        markdownContentWS.innerHTML = marked.parse(data.result);
+        
+        // Re-enable form
+        document.getElementById('query').disabled = false;
+        document.querySelector('button[type="submit"]').disabled = false;
+    }
+    
+    function handleResearchError(data) {
+        // Hide loading
+        loadingSection.style.display = 'none';
+        
+        // Show error
+        resultSection.style.display = 'block';
+        resultHeader.innerHTML = `
+            <h4 class="mb-0 text-danger">
+                <i class="bi bi-exclamation-triangle"></i>
+                Research Error
+            </h4>
+        `;
+        
+        resultBody.innerHTML = `
+            <div class="error-result p-3 rounded">
+                <h6 class="fw-bold text-danger">Error occurred:</h6>
+                <p class="mb-0">${data.error}</p>
+            </div>
+        `;
+        
+        // Re-enable form
+        document.getElementById('query').disabled = false;
+        document.querySelector('button[type="submit"]').disabled = false;
+    }
+    
+    // PDF download function
+    window.downloadPDF = async function(query, content) {
+        try {
+            const formData = new FormData();
+            formData.append('query', query);
+            formData.append('content', content);
+            
+            const response = await fetch('/generate-pdf', {
+                method: 'POST',
+                body: formData
+            });
+            
+            if (response.ok) {
+                const blob = await response.blob();
+                const url = window.URL.createObjectURL(blob);
+                const a = document.createElement('a');
+                a.href = url;
+                a.download = `research_report_${query.replace(/[^a-zA-Z0-9]/g, '_').substring(0, 30)}.pdf`;
+                document.body.appendChild(a);
+                a.click();
+                window.URL.revokeObjectURL(url);
+                document.body.removeChild(a);
+            } else {
+                alert('Failed to generate PDF. Please try again.');
+            }
+        } catch (error) {
+            console.error('PDF download error:', error);
+            alert('Failed to download PDF. Please try again.');
+        }
+    };
+    
+    // Connect WebSocket on page load
+    connectWebSocket();
+    
+    // Modify form submission to use WebSocket real-time endpoint
+    const originalSubmit = researchForm.onsubmit;
+    researchForm.onsubmit = null;
+    
+    researchForm.addEventListener('submit', async function(e) {
+        e.preventDefault();
+        
+        const queryInput = document.getElementById('query');
+        const query = queryInput.value.trim();
+        
+        if (!query || query.length < 3) {
+            alert('Please enter a research query with at least 3 characters.');
+            return;
+        }
+
+        // Show loading, hide results
+        loadingSection.style.display = 'block';
+        resultSection.style.display = 'none';
+        
+        // Disable form
+        queryInput.disabled = true;
+        document.querySelector('button[type="submit"]').disabled = true;
+
+        try {
+            // Submit real-time research request
+            const formData = new FormData();
+            formData.append('query', query);
+            
+            const response = await fetch('/research-realtime', {
+                method: 'POST',
+                body: formData
+            });
+            
+            const data = await response.json();
+            
+            if (!data.success) {
+                // Hide loading and show error
+                loadingSection.style.display = 'none';
+                resultSection.style.display = 'block';
+                
+                resultHeader.innerHTML = `
+                    <h4 class="mb-0 text-danger">
+                        <i class="bi bi-exclamation-triangle"></i>
+                        Research Error
+                    </h4>
+                `;
+                resultBody.innerHTML = `
+                    <div class="error-result p-3 rounded">
+                        <p class="mb-0">${data.error || 'Failed to start research'}</p>
+                    </div>
+                `;
+                
+                // Re-enable form
+                queryInput.disabled = false;
+                document.querySelector('button[type="submit"]').disabled = false;
+            }
+            // If successful, WebSocket will handle the rest
+            
+        } catch (error) {
+            console.error('Error:', error);
+            loadingSection.style.display = 'none';
+            resultSection.style.display = 'block';
+            
+            resultHeader.innerHTML = `
+                <h4 class="mb-0 text-danger">
+                    <i class="bi bi-exclamation-triangle"></i>
+                    Network Error
+                </h4>
+            `;
+            resultBody.innerHTML = `
+                <div class="error-result p-3 rounded">
+                    <p class="mb-0">Failed to connect to the research service. Please try again.</p>
+                </div>
+            `;
+            
+            // Re-enable form
+            queryInput.disabled = false;
+            document.querySelector('button[type="submit"]').disabled = false;
+        }
+    });
+    
+    // D3.js Agent Workflow Graph
+    function initializeAgentGraph() {
+        const graphContainer = document.getElementById('agentGraph');
+        const width = graphContainer.clientWidth;
+        const height = graphContainer.clientHeight;
+        
+        // Clear any existing graph
+        d3.select('#agentGraph').selectAll('*').remove();
+        
+        const svg = d3.select('#agentGraph')
+            .append('svg')
+            .attr('width', width)
+            .attr('height', height);
+        
+        // Define nodes for each agent
+        const nodes = [
+            {id: 'coordinator', name: 'Research Coordinator', x: width/4, y: height/6, status: 'idle'},
+            {id: 'searcher', name: 'Literature Searcher', x: 3*width/4, y: height/6, status: 'idle'},
+            {id: 'analyst', name: 'Research Analyst', x: width/4, y: 5*height/6, status: 'idle'},
+            {id: 'writer', name: 'Report Writer', x: 3*width/4, y: 5*height/6, status: 'idle'}
+        ];
+        
+        // Define workflow connections
+        const links = [
+            {source: 'coordinator', target: 'searcher'},
+            {source: 'searcher', target: 'analyst'},
+            {source: 'analyst', target: 'writer'}
+        ];
+        
+        // Color scheme for different statuses
+        const statusColors = {
+            'idle': '#6c757d',
+            'active': '#007bff',
+            'completed': '#28a745',
+            'error': '#dc3545'
+        };
+        
+        // Draw connections
+        const linkGroup = svg.append('g').attr('class', 'links');
+        const nodeGroup = svg.append('g').attr('class', 'nodes');
+        
+        // Create links
+        const linkElements = linkGroup.selectAll('line')
+            .data(links)
+            .enter().append('line')
+            .attr('stroke', '#999')
+            .attr('stroke-width', 2)
+            .attr('stroke-dasharray', '5,5')
+            .attr('x1', d => nodes.find(n => n.id === d.source).x)
+            .attr('y1', d => nodes.find(n => n.id === d.source).y)
+            .attr('x2', d => nodes.find(n => n.id === d.target).x)
+            .attr('y2', d => nodes.find(n => n.id === d.target).y);
+        
+        // Create nodes
+        const nodeElements = nodeGroup.selectAll('g')
+            .data(nodes)
+            .enter().append('g')
+            .attr('class', 'node')
+            .attr('transform', d => `translate(${d.x}, ${d.y})`);
+        
+        // Add circles for nodes
+        nodeElements.append('circle')
+            .attr('r', 30)
+            .attr('fill', d => statusColors[d.status])
+            .attr('stroke', '#fff')
+            .attr('stroke-width', 3);
+        
+        // Add icons to nodes using HTML entity codes for Bootstrap Icons
+        nodeElements.append('text')
+            .attr('text-anchor', 'middle')
+            .attr('dy', '.35em')
+            .attr('font-family', 'Bootstrap Icons, sans-serif')
+            .attr('font-size', '20px')
+            .attr('fill', 'white')
+            .text(d => {
+                switch(d.id) {
+                    case 'coordinator': return '👤'; // person fallback
+                    case 'searcher': return '🔍'; // search fallback  
+                    case 'analyst': return '📊'; // graph fallback
+                    case 'writer': return '📝'; // file fallback
+                    default: return '🤖';
+                }
+            });
+        
+        // Add labels
+        nodeElements.append('text')
+            .attr('text-anchor', 'middle')
+            .attr('dy', '50px')
+            .attr('font-size', '12px')
+            .attr('font-weight', 'bold')
+            .text(d => d.name.split(' ').map(word => word.slice(0, 8)).join(' '));
+        
+        // Store references for updates
+        window.agentGraphNodes = nodeElements;
+        window.agentGraphLinks = linkElements;
+        
+        // Function to update node status
+        window.updateGraphNodeStatus = function(agentId, status) {
+            const node = nodes.find(n => n.id === agentId);
+            if (node) {
+                node.status = status;
+                
+                // Update node color
+                nodeElements.filter(d => d.id === agentId)
+                    .select('circle')
+                    .transition()
+                    .duration(500)
+                    .attr('fill', statusColors[status]);
+                
+                // Add pulse animation for active nodes
+                if (status === 'active') {
+                    nodeElements.filter(d => d.id === agentId)
+                        .select('circle')
+                        .transition()
+                        .duration(1000)
+                        .attr('r', 35)
+                        .transition()
+                        .duration(1000)
+                        .attr('r', 30)
+                        .on('end', function repeat() {
+                            if (node.status === 'active') {
+                                d3.select(this)
+                                    .transition()
+                                    .duration(1000)
+                                    .attr('r', 35)
+                                    .transition()
+                                    .duration(1000)
+                                    .attr('r', 30)
+                                    .on('end', repeat);
+                            }
+                        });
+                }
+                
+                // Update active connection
+                if (status === 'active') {
+                    // Find outgoing connections
+                    const activeLinks = links.filter(l => l.source === agentId);
+                    linkElements.filter(l => activeLinks.includes(l))
+                        .attr('stroke', statusColors[status])
+                        .attr('stroke-width', 3)
+                        .attr('stroke-dasharray', '0');
+                }
+            }
+        };
+    }
+    
+    // Initialize graph on page load
+    initializeAgentGraph();
+    
+    // Update graph when window resizes
+    window.addEventListener('resize', function() {
+        setTimeout(initializeAgentGraph, 100);
+    });
+    
+    // Integrate graph updates with agent status updates
+    const originalUpdateAgentStatus = updateAgentStatus;
+    updateAgentStatus = function(agentName, agentData) {
+        // Call original function
+        originalUpdateAgentStatus(agentName, agentData);
+        
+        // Update graph
+        if (window.updateGraphNodeStatus) {
+            window.updateGraphNodeStatus(agentName, agentData.status);
+        }
+    };
 });
 </script>
 {% endblock %}

@@ -64,22 +64,77 @@ class TrackedLLM:
         self.logger.debug(f"LLM context set - Agent: {agent_name}, Task: {task_description}")
     
     def _estimate_tokens(self, text: str) -> int:
-        """Rough estimation of token count (approximate: 4 chars = 1 token)"""
-        return max(1, len(text) // 4)
+        """Better estimation of token count using Claude's tokenization patterns"""
+        if not text:
+            return 0
+        
+        # More accurate token estimation for Claude models
+        # Claude typically uses ~3.5-4 characters per token on average
+        # We'll use a more conservative estimate to avoid underestimating costs
+        
+        # Basic character count approach with some adjustments
+        char_count = len(str(text))
+        
+        # Adjust for common patterns:
+        # - Spaces and punctuation typically use fewer characters per token
+        # - Technical terms and code might use more
+        word_count = len(str(text).split())
+        
+        # Use a hybrid approach: character count with word-based adjustment
+        # Average of 3.2 chars per token (slightly conservative)
+        estimated_tokens = max(1, int(char_count / 3.2))
+        
+        # Ensure we have at least as many tokens as words (very conservative floor)
+        estimated_tokens = max(estimated_tokens, word_count)
+        
+        self.logger.debug(f"Token estimation: {char_count} chars, {word_count} words -> {estimated_tokens} tokens")
+        return estimated_tokens
     
     def _parse_response_usage(self, response: Any) -> tuple:
         """Parse token usage from API response"""
-        # Try to extract actual token usage from response
+        # Try multiple approaches to extract actual token usage from response
         try:
+            # Method 1: Direct usage attribute
             if hasattr(response, 'usage'):
-                input_tokens = getattr(response.usage, 'input_tokens', 0)
-                output_tokens = getattr(response.usage, 'output_tokens', 0)
-                return input_tokens, output_tokens
-            elif hasattr(response, 'token_usage'):
+                usage = response.usage
+                if hasattr(usage, 'input_tokens') and hasattr(usage, 'output_tokens'):
+                    return usage.input_tokens, usage.output_tokens
+                elif hasattr(usage, 'prompt_tokens') and hasattr(usage, 'completion_tokens'):
+                    return usage.prompt_tokens, usage.completion_tokens
+            
+            # Method 2: Token usage attribute
+            if hasattr(response, 'token_usage'):
                 usage = response.token_usage
-                input_tokens = getattr(usage, 'prompt_tokens', 0)
-                output_tokens = getattr(usage, 'completion_tokens', 0)
-                return input_tokens, output_tokens
+                if hasattr(usage, 'input_tokens') and hasattr(usage, 'output_tokens'):
+                    return usage.input_tokens, usage.output_tokens
+                elif hasattr(usage, 'prompt_tokens') and hasattr(usage, 'completion_tokens'):
+                    return usage.prompt_tokens, usage.completion_tokens
+            
+            # Method 3: Check if response is a dict with usage info
+            if isinstance(response, dict):
+                if 'usage' in response:
+                    usage = response['usage']
+                    if 'input_tokens' in usage and 'output_tokens' in usage:
+                        return usage['input_tokens'], usage['output_tokens']
+                    elif 'prompt_tokens' in usage and 'completion_tokens' in usage:
+                        return usage['prompt_tokens'], usage['completion_tokens']
+            
+            # Method 4: Check response content for Claude-specific patterns
+            response_str = str(response)
+            if 'input_tokens' in response_str and 'output_tokens' in response_str:
+                # Try to parse from string representation
+                import re
+                input_match = re.search(r'input_tokens["\']?:\s*(\d+)', response_str)
+                output_match = re.search(r'output_tokens["\']?:\s*(\d+)', response_str)
+                if input_match and output_match:
+                    return int(input_match.group(1)), int(output_match.group(1))
+            
+            # Log response structure for debugging
+            self.logger.debug(f"Response type: {type(response)}")
+            self.logger.debug(f"Response attributes: {dir(response)}")
+            if hasattr(response, '__dict__'):
+                self.logger.debug(f"Response dict: {response.__dict__}")
+                
         except Exception as e:
             self.logger.debug(f"Could not parse token usage from response: {e}")
         
